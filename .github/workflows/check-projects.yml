@@ -17,11 +17,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r projects/fraud-detection-cost-sensitive/requirements.txt
           python -m pip install -r projects/customer-analytics-sql/requirements.txt
+          python -m pip install -r projects/predictive-maintenance/requirements.txt
       - name: Check fraud evaluation
         run: |
           python -m unittest discover -s projects/fraud-detection-cost-sensitive/tests -v
           python projects/fraud-detection-cost-sensitive/train.py
-      - name: Check SQL reporting
+      - name: Check customer analytics
         run: |
           python -m unittest discover -s projects/customer-analytics-sql/tests -v
           python projects/customer-analytics-sql/src/run_analysis.py
+      - name: Check predictive maintenance
+        run: |
+          python -m unittest discover -s projects/predictive-maintenance/tests -v
+          python projects/predictive-maintenance/train.py
