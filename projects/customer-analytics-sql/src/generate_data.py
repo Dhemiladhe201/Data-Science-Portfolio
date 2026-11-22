@@ -40,9 +40,11 @@ def generate(db_path=None, seed=42, customers=1000, orders=9000):
                             weights=[0.38, 0.30, 0.18, 0.14])[0]
             ))
         conn.executemany("INSERT INTO customers VALUES (?,?,?,?)", customers_data)
+        # By design, some signups never purchase; this is a simulation assumption.
+        buyer_pool = rng.sample(customers_data, k=max(1, round(customers * 0.78)))
         orders_data = []
         for i in range(1, orders + 1):
-            customer = rng.choice(customers_data)
+            customer = rng.choice(buyer_pool)
             signed_up = date.fromisoformat(customer[1])
             last_day = (date(2026, 6, 30) - signed_up).days
             order_date = signed_up + timedelta(days=rng.randint(0, last_day))

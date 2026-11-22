@@ -1,13 +1,17 @@
-# Browser dashboard — independent preview
+# Browser dashboard — synthetic SQL results
 
-Open `index.html` in your browser. It initially shows a clearly labelled **illustrative preview** so the layout is visible without any setup.
+Open `index.html` in your browser. The default charts and KPIs are pre-populated with results from the project's **synthetic** retail generator and SQL queries (seed 42).
 
-To display the project's actual SQL results (still synthetic records):
+The generated sample is bundled in `sample-results.js` so the dashboard works offline; you do not need to install a local server.
 
-1. Run `python projects/customer-analytics-sql/src/run_analysis.py` from the repository root.
-2. Open this dashboard in a browser and select **Load SQL result CSVs**.
-3. Select all four files from `projects/customer-analytics-sql/outputs/`. The charts and KPI cards will update immediately.
+For an independent rerun:
 
-This is a standalone HTML dashboard with native SVG charts and no server dependency. It is **not a Power BI .pbix report**. Follow [the Power BI build guide](../POWER_BI_BUILD.md) to create the actual Power BI deliverable.
+1. Install the project dependencies and run `python projects/customer-analytics-sql/src/run_analysis.py` from the repository root.
+2. Open the dashboard and select **Load SQL result CSVs**.
+3. Select all four generated files under `projects/customer-analytics-sql/outputs/`. The charts update from those files.
 
-The dashboard uses only data you select in your browser; it does not upload files to a server.
+The synthetic input deliberately assigns around 22% of customers to a **non-purchasing group** to make conversion/segmentation calculations meaningful; that is a modelling assumption, not an empirical finding.
+
+This is a browser-based dashboard, **not a Power BI .pbix report**. Use [the Power BI guide](../POWER_BI_BUILD.md) for a Power BI Desktop implementation.
+
+No browser-uploaded CSV data is sent to a server.

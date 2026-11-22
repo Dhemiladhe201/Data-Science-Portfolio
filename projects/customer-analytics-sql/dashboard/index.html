@@ -36,8 +36,8 @@ input[type=file]{position:absolute;opacity:0;width:1px;height:1px}button{border:
 <div class="toolbar">
  <label for="files" class="button">Load SQL result CSVs</label>
  <input id="files" type="file" accept=".csv,text/csv" multiple>
- <button id="reset">Show illustrative preview</button>
- <span id="status" aria-live="polite">Illustrative preview · not output from SQL queries</span>
+ <button id="reset">Restore generated dataset</button>
+ <span id="status" aria-live="polite">Generated SQL summaries · synthetic dataset</span>
 </div>
 <section class="cards">
  <div class="card"><div class="label">TOTAL REVENUE</div><div class="metric" id="revenue">—</div><div class="muted" style="font-size:12px">Completed orders only</div></div>
@@ -49,38 +49,15 @@ input[type=file]{position:absolute;opacity:0;width:1px;height:1px}button{border:
  <article class="panel"><h2>Monthly revenue</h2><div class="chart" id="monthly"></div><div class="leg"><span>Calendar month</span><span>GBP</span></div></article>
  <article class="panel"><h2>Revenue by acquisition channel</h2><div class="chart" id="channels"></div><div class="leg"><span>Source channel</span><span>GBP</span></div></article>
  <article class="panel"><h2>Customer segments</h2><div class="chart" id="segments"></div><div class="leg"><span>Number of customers</span><span>Descriptive segments, not predictive scores</span></div></article>
- <article class="panel"><h2>Customer behaviour</h2><p class="muted">Revenue is calculated from completed orders. Customers enter a cohort in their first completed-purchase month, not when they sign up.</p><p class="muted">Refunds are excluded rather than netted off, and acquisition channels have no associated spend data. Channel revenue therefore does not represent advertising return on investment.</p><p class="muted">The segmentation thresholds and preview figures are illustrative.</p></article>
+ <article class="panel"><h2>Customer behaviour</h2><p class="muted">Revenue is calculated from completed orders. Customers enter a cohort in their first completed-purchase month, not when they sign up.</p><p class="muted">Refunds are excluded rather than netted off, and acquisition channels have no associated spend data. Channel revenue therefore does not represent advertising return on investment.</p><p class="muted">The segmentation thresholds and all displayed results come from a simulated dataset, not live customer observations.</p></article>
  <article class="panel sectionwide"><h2>Cohort retention (first purchase)</h2><div class="gridwrap" id="cohort"></div><p class="muted" style="font-size:12px">Colour indicates the percentage of the original cohort purchasing again in each subsequent month. Empty cells mean the period has not been observed.</p></article>
 </section>
 <footer>Educational dataset only. The "Load SQL result CSVs" control reads files locally in your browser; no data is sent to a server. <a href="../POWER_BI_BUILD.md">Power BI build instructions</a>.</footer>
 </main>
+<script src="sample-results.js"></script>
 <script>
 "use strict";
-const demo={
- monthly:[
- {month:"2025-01",orders:290,revenue_gbp:12880},{month:"2025-02",orders:327,revenue_gbp:14525},
- {month:"2025-03",orders:336,revenue_gbp:15870},{month:"2025-04",orders:348,revenue_gbp:16210},
- {month:"2025-05",orders:382,revenue_gbp:17975},{month:"2025-06",orders:401,revenue_gbp:19150},
- {month:"2025-07",orders:430,revenue_gbp:20160},{month:"2025-08",orders:446,revenue_gbp:21690}
- ],
- channels:[{acquisition_channel:"Organic",acquired_customers:390,paying_customers:322,total_revenue_gbp:89500},
- {acquisition_channel:"Paid Search",acquired_customers:290,paying_customers:244,total_revenue_gbp:72600},
- {acquisition_channel:"Referral",acquired_customers:190,paying_customers:164,total_revenue_gbp:43900},
- {acquisition_channel:"Social",acquired_customers:130,paying_customers:91,total_revenue_gbp:27200}],
- segments:[{customer_segment:"high_value_active"},{customer_segment:"high_value_active"},
- {customer_segment:"high_value_at_risk"},{customer_segment:"never_purchased"},
- {customer_segment:"other"},{customer_segment:"other"},{customer_segment:"other"},{customer_segment:"other"}],
- cohorts:[
- {cohort_month:"2025-01",months_since_first_purchase:0,retention_pct:100},
- {cohort_month:"2025-01",months_since_first_purchase:1,retention_pct:35},
- {cohort_month:"2025-01",months_since_first_purchase:2,retention_pct:24},
- {cohort_month:"2025-02",months_since_first_purchase:0,retention_pct:100},
- {cohort_month:"2025-02",months_since_first_purchase:1,retention_pct:39},
- {cohort_month:"2025-02",months_since_first_purchase:2,retention_pct:27},
- {cohort_month:"2025-03",months_since_first_purchase:0,retention_pct:100},
- {cohort_month:"2025-03",months_since_first_purchase:1,retention_pct:41}
- ]
-};
+const demo=window.dashboardData;
 const NS="http://www.w3.org/2000/svg";
 const money=n=>"£"+Number(n||0).toLocaleString("en-GB",{maximumFractionDigits:0});
 const num=n=>Number(n||0).toLocaleString("en-GB",{maximumFractionDigits:0});
@@ -149,7 +126,7 @@ function render(data){
  document.getElementById("paying").textContent=acquired?(100*paid/acquired).toFixed(1)+"%":"—";
  lineGraph(data.monthly);barGraph("channels",data.channels,"acquisition_channel","total_revenue_gbp");
  const counts={};
- data.segments.forEach(r=>counts[r.customer_segment]=(counts[r.customer_segment]||0)+1);
+ data.segments.forEach(r=>counts[r.customer_segment]=(counts[r.customer_segment]||0)+(+r.count||1));
  barGraph("segments",Object.entries(counts).map(([customer_segment,count])=>({customer_segment,count})),"customer_segment","count");
  renderCohorts(data.cohorts);
 }
@@ -171,7 +148,7 @@ document.getElementById("files").addEventListener("change",async e=>{
 });
 document.getElementById("reset").addEventListener("click",()=>{
  render(demo);document.getElementById("files").value="";
- document.getElementById("status").textContent="Illustrative preview · not output from SQL queries";
+ document.getElementById("status").textContent="Generated SQL summaries · synthetic dataset";
 });
 render(demo);
 </script></body></html>

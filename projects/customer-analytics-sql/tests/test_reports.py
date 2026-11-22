@@ -18,6 +18,18 @@ class ReportingTests(unittest.TestCase):
                     "SELECT SUM(amount_gbp) FROM orders WHERE status='completed'"
                 ).fetchone()[0]
                 self.assertLess(abs(total-expected), 0.2)
+    def test_non_buyers_are_present(self):
+        with tempfile.TemporaryDirectory() as directory:
+            db = generate(Path(directory) / "retail.db", customers=100, orders=1000)
+            with sqlite3.connect(db) as conn:
+                acquired = conn.execute("SELECT COUNT(*) FROM customers").fetchone()[0]
+                buyers = conn.execute(
+                    "SELECT COUNT(DISTINCT customer_id) FROM orders WHERE status='completed'"
+                ).fetchone()[0]
+                self.assertEqual(acquired, 100)
+                self.assertGreater(buyers, 60)
+                self.assertLess(buyers, 100)
+
     def test_cohort_retention_within_100_percent(self):
         with tempfile.TemporaryDirectory() as directory:
             db = generate(Path(directory) / "retail.db", customers=90, orders=500)

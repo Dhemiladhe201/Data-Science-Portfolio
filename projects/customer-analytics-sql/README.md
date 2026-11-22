@@ -8,6 +8,8 @@ A small retail reporting project built to practise translating business question
 3. Which customers are high-value and active, and which appear at risk of lapsing?
 4. What share of each first-purchase cohort returns in later months?
 
+The generator deliberately assigns about 22% of synthetic signups to a non-purchasing group, so customer-conversion and segmentation calculations have a meaningful denominator. This percentage is an assumption, not an observed commercial benchmark.
+
 The project creates a SQLite database with `customers` and `orders`, executes four queries and exports CSV files that can be used in Power BI.
 
 ## Run from the repository root
@@ -25,6 +27,12 @@ The generator uses a fixed seed. The database and CSVs are saved under `outputs/
 - Retention means at least one completed purchase in that month; it isn't subscription retention.
 - Segmentation thresholds are illustrative, not a validated customer-lifetime-value model.
 - Channel revenue is not return on ad spend: no acquisition cost data exists.
+
+## Results and dashboard
+
+- [Browser dashboard with generated sample SQL results](dashboard/)
+- [Interpretation and limitations](RESULTS_AND_LIMITATIONS.md)
+- [Power BI Desktop build instructions](POWER_BI_BUILD.md)
 
 ## Suggested dashboard
 In Power BI, show monthly revenue and average order value, acquisition channels, customer segments and a cohort-retention heatmap. Label the dashboard clearly as synthetic data.
