@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Retail customer analytics | Portfolio dashboard</title>
+<style>
+:root{--ink:#17253a;--sub:#586a7b;--line:#dbe2e8;--bg:#f4f7fa;--accent:#226f77;--panel:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1190px;margin:auto;padding:34px 22px 60px}
+h1{font-size:29px;letter-spacing:-.7px;margin:0 0 4px}h2{font-size:16px;margin:0 0 12px}
+.muted{color:var(--sub)}header{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;flex-wrap:wrap;padding-bottom:24px}
+.subtitle{margin:0}.tag{color:#286477;background:#e3f2f2;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:650}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border-top:1px solid var(--line);padding-top:16px}
+.button{display:inline-block;background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px}
+input[type=file]{position:absolute;opacity:0;width:1px;height:1px}button{border:1px solid var(--line);background:white;padding:9px 12px;border-radius:8px;cursor:pointer;color:var(--ink)}
+#status{font-size:12px;color:var(--sub)}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+.metric{font-size:25px;font-weight:700;letter-spacing:-.8px;margin-top:5px}.label{font-size:12px;color:var(--sub);font-weight:600}
+.panels{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}.chart{height:240px}.chart svg{width:100%;height:100%;overflow:visible}
+.leg{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--sub);margin:10px 0 0}
+.gridwrap{overflow:auto;max-height:330px}.heatmap{border-collapse:collapse;width:100%;font-size:12px;text-align:center}
+.heatmap th,.heatmap td{padding:8px 7px;border-bottom:1px solid #edf1f4;white-space:nowrap}
+.heatmap th:first-child,.heatmap td:first-child{text-align:left;position:sticky;left:0;background:#fff}
+.sectionwide{grid-column:1/-1}footer{padding-top:18px;color:var(--sub);font-size:12px}
+@media(max-width:760px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.panels{grid-template-columns:1fr}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div><div class="tag" style="display:inline-block;margin-bottom:10px">Data portfolio / SQL analysis</div>
+ <h1>Customer analytics</h1><p class="subtitle muted">Revenue, acquisition and retention · synthetic retail data</p></div>
+ <div style="text-align:right"><div class="muted" style="font-size:12px">Portfolio demonstration</div><div style="font-weight:650">2024–2026</div></div>
+</header>
+<div class="toolbar">
+ <label for="files" class="button">Load SQL result CSVs</label>
+ <input id="files" type="file" accept=".csv,text/csv" multiple>
+ <button id="reset">Restore generated dataset</button>
+ <span id="status" aria-live="polite">Generated SQL summaries · synthetic dataset</span>
+</div>
+<section class="cards">
+ <div class="card"><div class="label">TOTAL REVENUE</div><div class="metric" id="revenue">—</div><div class="muted" style="font-size:12px">Completed orders only</div></div>
+ <div class="card"><div class="label">COMPLETED ORDERS</div><div class="metric" id="orders">—</div><div class="muted" style="font-size:12px">Synthetic transactions</div></div>
+ <div class="card"><div class="label">AVERAGE ORDER VALUE</div><div class="metric" id="aov">—</div><div class="muted" style="font-size:12px">Revenue ÷ orders</div></div>
+ <div class="card"><div class="label">PAYING CUSTOMER RATE</div><div class="metric" id="paying">—</div><div class="muted" style="font-size:12px">Buyers ÷ acquired</div></div>
+</section>
+<section class="panels">
+ <article class="panel"><h2>Monthly revenue</h2><div class="chart" id="monthly"></div><div class="leg"><span>Calendar month</span><span>GBP</span></div></article>
+ <article class="panel"><h2>Revenue by acquisition channel</h2><div class="chart" id="channels"></div><div class="leg"><span>Source channel</span><span>GBP</span></div></article>
+ <article class="panel"><h2>Customer segments</h2><div class="chart" id="segments"></div><div class="leg"><span>Number of customers</span><span>Descriptive segments, not predictive scores</span></div></article>
+ <article class="panel"><h2>Customer behaviour</h2><p class="muted">Revenue is calculated from completed orders. Customers enter a cohort in their first completed-purchase month, not when they sign up.</p><p class="muted">Refunds are excluded rather than netted off, and acquisition channels have no associated spend data. Channel revenue therefore does not represent advertising return on investment.</p><p class="muted">The segmentation thresholds and all displayed results come from a simulated dataset, not live customer observations.</p></article>
+ <article class="panel sectionwide"><h2>Cohort retention (first purchase)</h2><div class="gridwrap" id="cohort"></div><p class="muted" style="font-size:12px">Colour indicates the percentage of the original cohort purchasing again in each subsequent month. Empty cells mean the period has not been observed.</p></article>
+</section>
+<footer>Educational dataset only. The "Load SQL result CSVs" control reads files locally in your browser; no data is sent to a server. <a href="https://github.com/Dhemiladhe201/hello/blob/main/projects/customer-analytics-sql/POWER_BI_BUILD.md">Power BI build instructions</a>.</footer>
+</main>
+<script src="sample-results.js"></script>
+<script>
+"use strict";
+const demo=window.dashboardData;
+const NS="http://www.w3.org/2000/svg";
+const money=n=>"£"+Number(n||0).toLocaleString("en-GB",{maximumFractionDigits:0});
+const num=n=>Number(n||0).toLocaleString("en-GB",{maximumFractionDigits:0});
+function node(type,attrs,text){
+ const el=document.createElementNS(NS,type);
+ Object.entries(attrs||{}).forEach(([k,v])=>el.setAttribute(k,String(v)));
+ if(text!==undefined)el.textContent=text;
+ return el;
+}
+function canvas(id){const el=document.getElementById(id);el.replaceChildren();const svg=node("svg",{viewBox:"0 0 600 260",role:"img","aria-label":id+" data chart"});el.appendChild(svg);return svg;}
+function label(svg,x,y,t,anchor="start",color="#576a79"){svg.appendChild(node("text",{x,y,fill:color,"font-size":12,"text-anchor":anchor},t));}
+function lineGraph(rows){
+ const s=canvas("monthly");if(!rows.length)return;
+ const sorted=[...rows].sort((a,b)=>a.month.localeCompare(b.month));
+ const vals=sorted.map(x=>+x.revenue_gbp||0);
+ const max=Math.max(1,...vals)*1.15;
+ const W=545,H=200,left=46,top=12;
+ for(let i=0;i<5;i++){let y=top+H*i/4;
+ s.appendChild(node("line",{x1:left,y1:y,x2:left+W,y2:y,stroke:"#e5eaf0"}));
+ label(s,left-8,y+4,money(max*(1-i/4)),"end");}
+ const pts=vals.map((v,i)=>[left+(W*(i/Math.max(1,vals.length-1))),top+H*(1-v/max)]);
+ s.appendChild(node("path",{d:"M"+pts.map(p=>p.join(",")).join(" L"),fill:"none",stroke:"#226f77","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"}));
+ pts.forEach(p=>s.appendChild(node("circle",{cx:p[0],cy:p[1],r:3.5,fill:"#226f77"})));
+ const mid=Math.floor(sorted.length/2);
+ [0,mid,sorted.length-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>label(s,pts[i][0],236,sorted[i].month,"middle"));
+}
+function barGraph(id,rows,category,value){
+ const s=canvas(id); const top=[...rows].sort((a,b)=>(+b[value]||0)-(+a[value]||0)).slice(0,5);
+ const max=Math.max(1,...top.map(x=>+x[value]||0));
+ top.forEach((item,i)=>{
+  const y=14+i*47, amt=+item[value]||0, w=290*amt/max;
+  label(s,0,y+14,String(item[category]).replace(/_/g," ").slice(0,25));
+  s.appendChild(node("rect",{x:204,y,width:w,height:22,rx:3,fill:i===0?"#226f77":"#76aeb2"}));
+  label(s,212+w,y+15,value==="count"?num(amt):money(amt));
+ });
+}
+function renderCohorts(rows){
+ const holder=document.getElementById("cohort");holder.replaceChildren();
+ if(!rows.length)return;
+ const months=[...new Set(rows.map(r=>r.cohort_month))].sort().slice(-12);
+ const keys=[0,1,2,3,4,5,6]; const table=document.createElement("table");
+ table.className="heatmap";
+ const thead=table.createTHead(),head=thead.insertRow();["Cohort",...keys.map(x=>"M"+x)].forEach(t=>{let th=document.createElement("th");th.textContent=t;head.appendChild(th);});
+ const body=table.createTBody();
+ months.forEach(month=>{
+  const row=body.insertRow();let first=row.insertCell();first.textContent=month;
+  keys.forEach(k=>{
+   const cell=row.insertCell();let match=rows.find(r=>r.cohort_month===month && +r.months_since_first_purchase===k);
+   if(!match){cell.textContent="—";return;}
+   const p=Math.max(0,Math.min(100,+match.retention_pct||0));
+   cell.textContent=p.toFixed(1)+"%";
+   cell.style.backgroundColor="rgba(34,111,119,"+(0.08+0.55*p/100)+")";
+   cell.style.color=p>65?"white":"#17253a";
+  });
+ });
+ holder.appendChild(table);
+}
+function render(data){
+ const revenue=data.monthly.reduce((t,r)=>t+(+r.revenue_gbp||0),0);
+ const orders=data.monthly.reduce((t,r)=>t+(+r.orders||0),0);
+ const acquired=data.channels.reduce((t,r)=>t+(+r.acquired_customers||0),0);
+ const paid=data.channels.reduce((t,r)=>t+(+r.paying_customers||0),0);
+ document.getElementById("revenue").textContent=money(revenue);
+ document.getElementById("orders").textContent=num(orders);
+ document.getElementById("aov").textContent=money(orders?revenue/orders:0);
+ document.getElementById("paying").textContent=acquired?(100*paid/acquired).toFixed(1)+"%":"—";
+ lineGraph(data.monthly);barGraph("channels",data.channels,"acquisition_channel","total_revenue_gbp");
+ const counts={};
+ data.segments.forEach(r=>counts[r.customer_segment]=(counts[r.customer_segment]||0)+(+r.count||1));
+ barGraph("segments",Object.entries(counts).map(([customer_segment,count])=>({customer_segment,count})),"customer_segment","count");
+ renderCohorts(data.cohorts);
+}
+function parseCSV(text){
+ const lines=text.trim().split(/\r?\n/).filter(Boolean);
+ if(!lines.length)return [];
+ const header=lines[0].split(",").map(s=>s.trim().replace(/^\uFEFF/,""));
+ return lines.slice(1).map(line=>Object.fromEntries(line.split(",").map((v,i)=>[header[i],v.trim()])));
+}
+document.getElementById("files").addEventListener("change",async e=>{
+ const next={monthly:[],channels:[],segments:[],cohorts:[]};let count=0;
+ for(const file of Array.from(e.target.files||[])){
+  const key=file.name.startsWith("01_")?"monthly":file.name.startsWith("02_")?"channels":
+    file.name.startsWith("03_")?"segments":file.name.startsWith("04_")?"cohorts":null;
+  if(!key)continue;next[key]=parseCSV(await file.text());count++;
+ }
+ if(count===4){render(next);document.getElementById("status").textContent="Loaded four SQL result CSV files · synthetic project dataset";}
+ else document.getElementById("status").textContent="Please select all four SQL results (01_, 02_, 03_, 04_); found "+count;
+});
+document.getElementById("reset").addEventListener("click",()=>{
+ render(demo);document.getElementById("files").value="";
+ document.getElementById("status").textContent="Generated SQL summaries · synthetic dataset";
+});
+render(demo);
+</script></body></html>
