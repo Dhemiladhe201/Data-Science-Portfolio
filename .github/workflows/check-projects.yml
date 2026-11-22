@@ -31,11 +31,21 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           html = Path("projects/customer-analytics-sql/dashboard/index.html").read_text()
-          assert html.count("<script>") == 1 and html.count("</script>") == 1
+          assert html.count("<script>") == 1 and html.count("<script src=") == 1
           code = html.split("<script>", 1)[1].split("</script>", 1)[0]
           Path("/tmp/customer_dashboard.js").write_text(code)
           PY
           node --check /tmp/customer_dashboard.js
+          node --check projects/customer-analytics-sql/dashboard/sample-results.js
+          node - <<'JS'
+          global.window = {};
+          require("./projects/customer-analytics-sql/dashboard/sample-results.js");
+          const d = window.dashboardData;
+          if (d.monthly.length !== 30 || d.channels.length !== 4 ||
+              d.segments.reduce((n, s) => n + s.count, 0) !== 1000) {
+            throw new Error("Unexpected synthetic dashboard data structure");
+          }
+          JS
       - name: Check predictive maintenance
         run: |
           python -m unittest discover -s projects/predictive-maintenance/tests -v
