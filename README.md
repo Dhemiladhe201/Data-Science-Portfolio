@@ -1,28 +1,29 @@
 # Data and machine-learning projects
 
-I'm an MSc Data Science and Analytics graduate (Distinction) with experience in business reporting and client advisory. My main interests are applied machine learning, fraud analytics and using SQL to answer practical business questions.
+I'm an MSc Data Science and Analytics graduate (Distinction) with experience in business reporting and client advisory. My interests include applied machine learning, fraud analytics, SQL and industrial data.
 
-This repository brings together my dissertation notebook and smaller reproducible projects. They're different kinds of work, and I've kept that distinction clear.
+This repository contains my original MSc dissertation notebook and three **separate, reproducible learning projects**. All of the practice projects use synthetic data.
 
-## Work in this repository
-
-| Project | What it covers | Status |
+| Project | Main question | Status |
 | --- | --- | --- |
-| [MSc credit-card fraud dissertation](IMPROVING_CREDIT_CARD_FRAUD_DETECTION_THROUGH_COST_SENSITIVE_MACHINE_LEARNING.ipynb) | Logistic Regression, Random Forest, SVM, class imbalance and error costs | Original academic notebook; methodology review in progress |
-| [Fraud detection: validation and decision costs](projects/fraud-detection-cost-sensitive/) | Held-out evaluation, PR-AUC and cost-based thresholds on synthetic data | Reproducible practice project |
-| [Retail customer analytics](projects/customer-analytics-sql/) | SQLite, revenue metrics, acquisition channels, customer segments and cohort retention | Reproducible SQL practice project |
+| [MSc credit-card fraud dissertation](IMPROVING_CREDIT_CARD_FRAUD_DETECTION_THROUGH_COST_SENSITIVE_MACHINE_LEARNING.ipynb) | How can classification models be compared when missed fraud is costly? | Original university notebook; [review notes](research-notes/dissertation-methodology-review.md) |
+| [Cost-sensitive fraud classification](projects/fraud-detection-cost-sensitive/) | How should a probability threshold reflect different error costs? | Reproducible practice project |
+| [Retail customer analytics](projects/customer-analytics-sql/) | What drives revenue and repeat purchases? | SQL practice project, with [dashboard](projects/customer-analytics-sql/dashboard/) |
+| [Industrial predictive maintenance](projects/predictive-maintenance/) | Can sensor patterns provide early warning of equipment failure? | Reproducible practice project |
 
-The two practice projects use generated data. They aren't consultancy assignments, and their metrics should not be interpreted as performance on real financial or customer records.
+## What I learned
 
-## What I'm improving
+The original fraud notebook highlighted why resampling and model validation need extra attention when the positive class is very small. Rather than hide those limitations, I recorded them in [a methodology review](research-notes/dissertation-methodology-review.md). The separate practice projects use explicit train/validation/test stages or SQL queries that can be rerun.
 
-The dissertation was my starting point for applied machine learning. After reviewing the notebook, I identified several places where preprocessing, resampling and validation should be separated more carefully. I've written these up in [the methodology review](research-notes/dissertation-methodology-review.md), including how I intend to re-run the experiments. The original notebook remains available as a record of the work submitted.
+## Run a project
 
-## Background and links
+Each folder has its own README, dependencies and commands. The GitHub Actions workflow exercises the examples automatically. No privately sourced client, bank or employer data has been included.
+
+## About me
 
 - MSc Data Science and Analytics, Teesside University London — Distinction (2026)
 - BSc Chemical Engineering, University of Lagos
-- Prior work in client advisory, operational reporting and business analysis
+- Previous experience in client advisory, business analysis and operational reporting
 - [LinkedIn](https://www.linkedin.com/in/oluwademilade-oyelade-4176b51b4/)
 
-These repositories are work samples, not production systems. I welcome constructive technical feedback.
+See [PROFILE_README.md](PROFILE_README.md) for a short GitHub profile biography. A GitHub profile README must be placed in a separate public repository named exactly after the account to appear on the account's front page.
